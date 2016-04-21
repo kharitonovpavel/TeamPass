@@ -459,6 +459,7 @@ function RecupComplexite(val, edit, context)
 {
     context = context || "";    // make context optional
     
+    console.log($("#selected.items").val());
     var funcReturned = null;
     $.ajaxSetup({async: false});
     $.post(
@@ -1560,8 +1561,9 @@ function open_add_group_div()
 //###########
 function open_edit_group_div()
 {
-    // exclude for PF
-    if ($('#recherche_group_pf').val() == "1") {
+
+//!!!!
+    if ($('#recherche_group_pf').val() == "1" && $('#hid_cat').val() == "<?php echo $_SESSION['personal_folders'][0];?>") {
         displayMessage("<?php echo $LANG['error_not_allowed_to'];?>");
         return false;
     }
@@ -1616,7 +1618,8 @@ function open_move_group_div()
 function open_del_group_div()
 {
     // exclude for PF
-    if ($('#recherche_group_pf').val() == "1") {
+//    if ($('#recherche_group_pf').val() == "1") {
+    if ($('#recherche_group_pf').val() == "1" && $('#hid_cat').val() == "<?php echo $_SESSION['personal_folders'][0];?>") {
         displayMessage("<?php echo $LANG['error_not_allowed_to'];?>");
         return false;
     }

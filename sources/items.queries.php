@@ -2157,7 +2157,13 @@ if (isset($_POST['type'])) {
                 if ($access['type'] == "W") $access['type'] = 0;
                 if ($access['type'] < $accessLevel) $accessLevel = $access['type'];
             }
-
+	
+	//!!!!!
+            // Identify of it is a personal folder add give full access exept own root folder
+            if (in_array($_POST['id'], $_SESSION['personal_folders'])
+    	    && $_POST['id'] !=$_SESSION['user_id']) {
+                $accessLevel=0;
+            }
 
             // Prepare returned values
             $returnValues = array(
@@ -2175,7 +2181,8 @@ if (isset($_POST['type'])) {
                 // "items" => $returnedData
                 'displayCategories' => $displayCategories,
                 'access_level' => $accessLevel,
-                'IsPersonalFolder' => $folderIsPf
+                'IsPersonalFolder' => $folderIsPf//,
+//                'debug' => JSON_encode($page)
             );
             // Check if $rights is not null
             if (count($rights) > 0) {
@@ -2947,10 +2954,11 @@ if (isset($_POST['type'])) {
                 WHERE r.folder_id = %i",
                 $_POST['iFolderId']
             );
+            
             foreach ($rows as $record) {
                 $selOptionsRoles .= '<option value="'.$record['role_id'].'" class="folder_rights_role">'.$record['title'].'</option>';
                 $selEOptionsRoles .= '<option value="'.$record['role_id'].'" class="folder_rights_role_edit">'.$record['title'].'</option>';
-            	$rows2 = DB::query("SELECT id, login, fonction_id FROM ".prefix_table("users")." WHERE fonction_id LIKE '%".$record['role_id']."%'");
+                $rows2 = DB::query("SELECT id, login, fonction_id FROM ".prefix_table("users")." WHERE fonction_id LIKE '%".$record['role_id']."%'");
                 foreach ($rows2 as $record2) {
                     foreach (explode(";", $record2['fonction_id']) as $role) {
                         if (!in_array($record2['id'], $aList) && $role == $record['role_id']) {
@@ -2960,9 +2968,8 @@ if (isset($_POST['type'])) {
                         }
                     }
                 }
-            	
             }
-            	$rows2 = DB::query("SELECT id, login, fonction_id FROM ".prefix_table("users")." WHERE fonction_id LIKE '%".$record['role_id']."%'");
+                $rows2 = DB::query("SELECT id, login, fonction_id FROM ".prefix_table("users")." WHERE fonction_id LIKE '%".$record['role_id']."%'");
                 foreach ($rows2 as $record2) {
                     foreach (explode(";", $record2['fonction_id']) as $role) {
                         if (!in_array($record2['id'], $aList) && $role == $record['role_id']) {
@@ -2972,7 +2979,6 @@ if (isset($_POST['type'])) {
                         }
                     }
                 }
-            
 
             // export data
             $data = array(
@@ -3159,7 +3165,9 @@ if (isset($_POST['type'])) {
                         // build select for all visible folders
                         if (in_array($folder->id, $_SESSION['groupes_visibles']) && !in_array($folder->id, $_SESSION['read_only_folders'])) {
                             if ($_SESSION['user_read_only'] == 0 || ($_SESSION['user_read_only'] == 1 && in_array($folder->id, $_SESSION['personal_visible_groups']))) {
-                                if (($folder->title == $_SESSION['user_id'] && $folder->nlevel == 1) || (in_array($folder->id, $_SESSION['personal_folders']))) {
+                                if (($folder->title == $_SESSION['user_id'] && $folder->nlevel == 1) 
+    //!!!         allow rename                       || (in_array($folder->id, $_SESSION['personal_folders']))
+                                ) {
                                     $selectVisibleFoldersOptions .= '<option value="'.$folder->id.'" disabled="disabled">'.$ident.$fldTitle.'</option>';
                                 } else {
                                     $selectVisibleFoldersOptions .= '<option value="'.$folder->id.'">'.$ident.$fldTitle.'</option>';

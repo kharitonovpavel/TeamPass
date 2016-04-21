@@ -191,7 +191,6 @@ if (isset($_POST['newtitle'])) {
                     );
                     //delete folder
                     DB::delete(prefix_table("nested_tree"), "id = %i", $folder->id);
-
                     //delete items & logs
                     $items = DB::query("SELECT id FROM ".prefix_table("items")." WHERE id_tree=%i", $folder->id);
                     foreach ($items as $item) {
@@ -219,7 +218,6 @@ if (isset($_POST['newtitle'])) {
                     $_SESSION['nb_folders'] --;
                 }
             }
-            
             // delete folder from SESSION
             if(($key = array_search($_POST['id'], $_SESSION['groupes_visibles'])) !== false) {
                 unset($messages[$key]);
@@ -374,6 +372,9 @@ if (isset($_POST['newtitle'])) {
                     );
                     $newId = DB::insertId();
 
+		//!!! isPersonl ? skip insert misc
+		if (
+		$isPersonal !=1 ) {
                     //Add complexity
                     DB::insert(
                         prefix_table("misc"),
@@ -383,7 +384,8 @@ if (isset($_POST['newtitle'])) {
                             'valeur' => $complexity
                         )
                     );
-
+		    }
+		    
                     // add new folder id in SESSION
                     array_push($_SESSION['groupes_visibles'], $newId);
 					if ($isPersonal == 1) {
@@ -506,7 +508,8 @@ if (isset($_POST['newtitle'])) {
                 array(
                     'parent_id' => $parentId,
                     'title' => $title,
-                    'personal_folder' => 0,
+		    //!!! we can update personal flder too, except  own rootFolder, 
+//                  'personal_folder' => 0,
                     'renewal_period' => $renewalPeriod,
                     'bloquer_creation' => $dataReceived['block_creation'] == 1 ? '1' : '0',
                     'bloquer_modification' => $dataReceived['block_modif'] == 1 ? '1' : '0'
@@ -515,6 +518,17 @@ if (isset($_POST['newtitle'])) {
                 $dataReceived['id']
             );
 
+
+		//!!! isPersonal
+                //check if parent folder is personal
+                $data = DB::queryfirstrow("SELECT personal_folder FROM ".prefix_table("nested_tree")." WHERE id = %i", $dataReceived['id']);
+                if ($data['personal_folder'] == "1") {
+                    $isPersonal = 1;
+                } else {
+                    $isPersonal = 0;
+                }
+
+	    if (!$isPersonal) {
             //Add complexity
             DB::update(
                 prefix_table("misc"),
@@ -525,7 +539,8 @@ if (isset($_POST['newtitle'])) {
                 $dataReceived['id'],
                 "complex"
             );
-
+	    }
+	    
             $tree = new Tree\NestedTree\NestedTree(prefix_table("nested_tree"), 'id', 'parent_id', 'title');
             $tree->rebuild();
 

@@ -716,7 +716,7 @@ function rest_get () {
                                 if (
                                     empty($data['restricted_to']) || 
                                     ($data['restricted_to'] != "" && in_array($user['id'], explode(";", $data['restricted_to'])))
-                                ) {							
+                                ) {                                
                                     // prepare export
                                     $json[$data['id']]['label'] = mb_convert_encoding($data['label'], mb_detect_encoding($data['label']), 'UTF-8');
                                     $json[$data['id']]['login'] = mb_convert_encoding($data['login'], mb_detect_encoding($data['login']), 'UTF-8');
